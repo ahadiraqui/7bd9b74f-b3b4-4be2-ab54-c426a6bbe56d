@@ -8,6 +8,8 @@ import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
 import LaptopInOut from "./pages/LaptopInOut";
 import Masters from "./pages/Masters";
+import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -19,11 +21,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/auth" element={<Auth />} />
           <Route element={<AppLayout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/employees" element={<Employees />} />
             <Route path="/laptop-inout" element={<LaptopInOut />} />
             <Route path="/masters" element={<Masters />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
