@@ -10,7 +10,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Plus, Pencil, Trash2, Search, Link2, Copy } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Link2, Copy, Download, Upload } from "lucide-react";
+import * as XLSX from "xlsx";
 import EmployeeDialog from "@/components/employees/EmployeeDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -180,6 +181,181 @@ const Employees = () => {
     });
   };
 
+  const downloadTemplate = () => {
+    const template = [
+      {
+        "Employee ID": "",
+        "Employee Name*": "",
+        "Name as per Aadhar*": "",
+        "Date Of Birth* (YYYY-MM-DD)": "",
+        "Gender* (Male/Female/Other)": "",
+        "Marital Status* (Single/Married/Divorced/Widowed)": "",
+        "Mobile Number*": "",
+        "Father Name*": "",
+        "Husband Name (For Married Female)": "",
+        "PF Opted (YES/NO)*": "",
+        "PF Basic Amount": "",
+        "Previous PF A/C No.": "",
+        "UAN Number": "",
+        "Bank Account No.*": "",
+        "IFSC Code*": "",
+        "Name as per Bank*": "",
+        "PAN Number*": "",
+        "Aadhar Number*": "",
+        "International Employee (YES/NO)*": "",
+        "Physically Handicapped (YES/NO)*": "",
+        "DOJ* (YYYY-MM-DD)": "",
+        "Emergency Mobile Number*": "",
+        "Permanent Address*": "",
+        "Department": "",
+        "Designation": "",
+        "Location": "",
+        "Email": "",
+        "Salary": "",
+      },
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(template);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Employee Template");
+    XLSX.writeFile(wb, "employee_template.xlsx");
+
+    toast({
+      title: "Success",
+      description: "Template downloaded successfully",
+    });
+  };
+
+  const validateEmployee = (emp: any, rowIndex: number): string[] => {
+    const errors: string[] = [];
+    const row = rowIndex + 2; // +2 because Excel starts at 1 and has header row
+
+    if (!emp["Employee Name*"]) errors.push(`Row ${row}: Employee Name is required`);
+    if (!emp["Name as per Aadhar*"]) errors.push(`Row ${row}: Name as per Aadhar is required`);
+    if (!emp["Date Of Birth* (YYYY-MM-DD)"]) errors.push(`Row ${row}: Date of Birth is required`);
+    if (!emp["Gender* (Male/Female/Other)"]) errors.push(`Row ${row}: Gender is required`);
+    if (!emp["Marital Status* (Single/Married/Divorced/Widowed)"]) errors.push(`Row ${row}: Marital Status is required`);
+    if (!emp["Mobile Number*"]) errors.push(`Row ${row}: Mobile Number is required`);
+    if (!emp["Father Name*"]) errors.push(`Row ${row}: Father Name is required`);
+    if (!emp["PF Opted (YES/NO)*"]) errors.push(`Row ${row}: PF Opted is required`);
+    if (!emp["Bank Account No.*"]) errors.push(`Row ${row}: Bank Account No. is required`);
+    if (!emp["IFSC Code*"]) errors.push(`Row ${row}: IFSC Code is required`);
+    if (!emp["Name as per Bank*"]) errors.push(`Row ${row}: Name as per Bank is required`);
+    if (!emp["PAN Number*"]) errors.push(`Row ${row}: PAN Number is required`);
+    if (!emp["Aadhar Number*"]) errors.push(`Row ${row}: Aadhar Number is required`);
+    if (!emp["International Employee (YES/NO)*"]) errors.push(`Row ${row}: International Employee is required`);
+    if (!emp["Physically Handicapped (YES/NO)*"]) errors.push(`Row ${row}: Physically Handicapped is required`);
+    if (!emp["DOJ* (YYYY-MM-DD)"]) errors.push(`Row ${row}: Date of Joining is required`);
+    if (!emp["Emergency Mobile Number*"]) errors.push(`Row ${row}: Emergency Mobile Number is required`);
+    if (!emp["Permanent Address*"]) errors.push(`Row ${row}: Permanent Address is required`);
+
+    // Validate mobile number format (10 digits)
+    if (emp["Mobile Number*"] && !/^\d{10}$/.test(emp["Mobile Number*"].toString())) {
+      errors.push(`Row ${row}: Mobile Number must be 10 digits`);
+    }
+
+    return errors;
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      if (jsonData.length === 0) {
+        toast({
+          title: "Error",
+          description: "The uploaded file is empty",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate all rows
+      const allErrors: string[] = [];
+      jsonData.forEach((emp: any, index: number) => {
+        const errors = validateEmployee(emp, index);
+        allErrors.push(...errors);
+      });
+
+      if (allErrors.length > 0) {
+        // Download error file
+        const errorData = allErrors.map((error, index) => ({
+          "Row": index + 1,
+          "Error": error,
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(errorData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Errors");
+        XLSX.writeFile(wb, "employee_upload_errors.xlsx");
+
+        toast({
+          title: "Validation Failed",
+          description: `${allErrors.length} errors found. Error file downloaded.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Convert to employee format and insert
+      const employees = jsonData.map((emp: any) => ({
+        employee_id: emp["Employee ID"] || undefined,
+        employee_name: emp["Employee Name*"],
+        name_as_per_aadhar: emp["Name as per Aadhar*"],
+        date_of_birth: emp["Date Of Birth* (YYYY-MM-DD)"],
+        gender: emp["Gender* (Male/Female/Other)"],
+        marital_status: emp["Marital Status* (Single/Married/Divorced/Widowed)"],
+        mobile_number: emp["Mobile Number*"].toString(),
+        father_name: emp["Father Name*"],
+        husband_name: emp["Husband Name (For Married Female)"] || undefined,
+        pf_opted: emp["PF Opted (YES/NO)*"].toUpperCase() === "YES",
+        pf_basic_amount: emp["PF Basic Amount"] || undefined,
+        previous_pf_account_no: emp["Previous PF A/C No."] || undefined,
+        uan_number: emp["UAN Number"] || undefined,
+        bank_account_no: emp["Bank Account No.*"],
+        ifsc_code: emp["IFSC Code*"],
+        name_as_per_bank: emp["Name as per Bank*"],
+        pan_number: emp["PAN Number*"],
+        aadhar_number: emp["Aadhar Number*"],
+        international_employee: emp["International Employee (YES/NO)*"].toUpperCase() === "YES",
+        physically_handicapped: emp["Physically Handicapped (YES/NO)*"].toUpperCase() === "YES",
+        date_of_joining: emp["DOJ* (YYYY-MM-DD)"],
+        emergency_mobile_number: emp["Emergency Mobile Number*"].toString(),
+        permanent_address: emp["Permanent Address*"],
+        department: emp["Department"] || undefined,
+        designation: emp["Designation"] || undefined,
+        location: emp["Location"] || undefined,
+        email: emp["Email"] || undefined,
+        salary: emp["Salary"] ? parseFloat(emp["Salary"]) : undefined,
+      }));
+
+      const { error } = await supabase.from("employees").insert(employees);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `${employees.length} employees uploaded successfully`,
+      });
+      fetchEmployees();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+
+    // Reset file input
+    e.target.value = "";
+  };
+
   if (loading) {
     return (
       <div className="p-6 space-y-6">
@@ -199,10 +375,29 @@ const Employees = () => {
             Manage your employee records
           </p>
         </div>
-        <Button onClick={handleAdd} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Employee
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button onClick={downloadTemplate} variant="outline" className="gap-2">
+            <Download className="h-4 w-4" />
+            Download Template
+          </Button>
+          <Button variant="outline" className="gap-2" asChild>
+            <label htmlFor="file-upload" className="cursor-pointer">
+              <Upload className="h-4 w-4" />
+              Upload Template
+              <input
+                id="file-upload"
+                type="file"
+                accept=".xlsx,.xls"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+            </label>
+          </Button>
+          <Button onClick={handleAdd} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add Employee
+          </Button>
+        </div>
       </div>
 
       <Card>
