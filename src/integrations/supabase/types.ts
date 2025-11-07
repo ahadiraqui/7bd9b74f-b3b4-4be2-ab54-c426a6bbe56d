@@ -14,6 +14,114 @@ export type Database = {
   }
   public: {
     Tables: {
+      employees: {
+        Row: {
+          aadhar_number: string
+          bank_account_no: string
+          created_at: string
+          date_of_birth: string
+          date_of_joining: string
+          department: string | null
+          designation: string | null
+          email: string | null
+          emergency_mobile_number: string
+          employee_id: string | null
+          employee_name: string
+          father_name: string
+          gender: string
+          husband_name: string | null
+          id: string
+          ifsc_code: string
+          international_employee: boolean
+          location: string | null
+          marital_status: string
+          mobile_number: string
+          name_as_per_aadhar: string
+          name_as_per_bank: string
+          pan_number: string
+          permanent_address: string
+          pf_basic_amount: string | null
+          pf_opted: boolean
+          physically_handicapped: boolean
+          previous_pf_account_no: string | null
+          salary: number | null
+          share_token: string | null
+          uan_number: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          aadhar_number: string
+          bank_account_no: string
+          created_at?: string
+          date_of_birth: string
+          date_of_joining: string
+          department?: string | null
+          designation?: string | null
+          email?: string | null
+          emergency_mobile_number: string
+          employee_id?: string | null
+          employee_name: string
+          father_name: string
+          gender: string
+          husband_name?: string | null
+          id?: string
+          ifsc_code: string
+          international_employee?: boolean
+          location?: string | null
+          marital_status: string
+          mobile_number: string
+          name_as_per_aadhar: string
+          name_as_per_bank: string
+          pan_number: string
+          permanent_address: string
+          pf_basic_amount?: string | null
+          pf_opted?: boolean
+          physically_handicapped?: boolean
+          previous_pf_account_no?: string | null
+          salary?: number | null
+          share_token?: string | null
+          uan_number?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          aadhar_number?: string
+          bank_account_no?: string
+          created_at?: string
+          date_of_birth?: string
+          date_of_joining?: string
+          department?: string | null
+          designation?: string | null
+          email?: string | null
+          emergency_mobile_number?: string
+          employee_id?: string | null
+          employee_name?: string
+          father_name?: string
+          gender?: string
+          husband_name?: string | null
+          id?: string
+          ifsc_code?: string
+          international_employee?: boolean
+          location?: string | null
+          marital_status?: string
+          mobile_number?: string
+          name_as_per_aadhar?: string
+          name_as_per_bank?: string
+          pan_number?: string
+          permanent_address?: string
+          pf_basic_amount?: string | null
+          pf_opted?: boolean
+          physically_handicapped?: boolean
+          previous_pf_account_no?: string | null
+          salary?: number | null
+          share_token?: string | null
+          uan_number?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

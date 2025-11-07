@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppLayout from "./components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
+import EmployeeUpdate from "./pages/EmployeeUpdate";
 import LaptopInOut from "./pages/LaptopInOut";
 import Masters from "./pages/Masters";
 import Auth from "./pages/Auth";
@@ -22,6 +23,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<Auth />} />
+          <Route path="/employee-update/:shareToken" element={<EmployeeUpdate />} />
           <Route element={<AppLayout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/employees" element={<Employees />} />
