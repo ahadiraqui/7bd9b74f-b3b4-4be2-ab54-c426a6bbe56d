@@ -56,6 +56,8 @@ const Employees = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [selectedEmployees, setSelectedEmployees] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -127,6 +129,57 @@ const Employees = () => {
         title: "Success",
         description: "Employee deleted successfully",
       });
+      fetchEmployees();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const toggleDeleteMode = () => {
+    setDeleteMode(!deleteMode);
+    setSelectedEmployees(new Set());
+  };
+
+  const toggleEmployeeSelection = (id: string) => {
+    const newSelected = new Set(selectedEmployees);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedEmployees(newSelected);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedEmployees.size === 0) {
+      toast({
+        title: "No Selection",
+        description: "Please select employees to delete",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete ${selectedEmployees.size} employee(s)?`)) return;
+
+    try {
+      const { error } = await supabase
+        .from("employees")
+        .delete()
+        .in("id", Array.from(selectedEmployees));
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `${selectedEmployees.size} employee(s) deleted successfully`,
+      });
+      setDeleteMode(false);
+      setSelectedEmployees(new Set());
       fetchEmployees();
     } catch (error: any) {
       toast({
@@ -454,8 +507,25 @@ const Employees = () => {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle>Search Employees</CardTitle>
+          <div className="flex gap-2">
+            {deleteMode ? (
+              <>
+                <Button onClick={handleBulkDelete} variant="destructive" size="sm">
+                  Delete Selected ({selectedEmployees.size})
+                </Button>
+                <Button onClick={toggleDeleteMode} variant="outline" size="sm">
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <Button onClick={toggleDeleteMode} variant="outline" size="sm" className="gap-2">
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="relative">
@@ -488,6 +558,7 @@ const Employees = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    {deleteMode && <TableHead className="w-12"></TableHead>}
                     <TableHead>Employee ID</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Mobile</TableHead>
@@ -495,12 +566,22 @@ const Employees = () => {
                     <TableHead>Department</TableHead>
                     <TableHead>Designation</TableHead>
                     <TableHead>DOJ</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    {!deleteMode && <TableHead className="text-right">Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredEmployees.map((employee) => (
                     <TableRow key={employee.id}>
+                      {deleteMode && (
+                        <TableCell>
+                          <input
+                            type="checkbox"
+                            checked={selectedEmployees.has(employee.id)}
+                            onChange={() => toggleEmployeeSelection(employee.id)}
+                            className="h-4 w-4 cursor-pointer"
+                          />
+                        </TableCell>
+                      )}
                       <TableCell className="font-medium">
                         {employee.employee_id || "N/A"}
                       </TableCell>
@@ -512,26 +593,28 @@ const Employees = () => {
                       <TableCell>
                         {new Date(employee.date_of_joining).toLocaleDateString()}
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(employee)}
-                            title="Edit"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(employee.id)}
-                            title="Delete"
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
+                      {!deleteMode && (
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEdit(employee)}
+                              title="Edit"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(employee.id)}
+                              title="Delete"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
