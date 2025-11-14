@@ -249,6 +249,16 @@ const Employees = () => {
     if (!emp["Emergency Mobile Number*"]) errors.push(`Row ${row}: Emergency Mobile Number is required`);
     if (!emp["Permanent Address*"]) errors.push(`Row ${row}: Permanent Address is required`);
 
+    // Validate date formats (DOB and DOJ)
+    const dobNorm = normalizeDateCell(emp["Date Of Birth* (YYYY-MM-DD)"]);
+    if (!dobNorm) {
+      errors.push(`Row ${row}: Invalid Date Of Birth. Use YYYY-MM-DD or a valid Excel date (e.g., 33005)`);
+    }
+    const dojNorm = normalizeDateCell(emp["DOJ* (YYYY-MM-DD)"]);
+    if (!dojNorm) {
+      errors.push(`Row ${row}: Invalid Date of Joining. Use YYYY-MM-DD or a valid Excel date (e.g., 33005)`);
+    }
+
     // Validate mobile number format (10 digits)
     if (emp["Mobile Number*"] && !/^\d{10}$/.test(String(emp["Mobile Number*"]))) {
       errors.push(`Row ${row}: Mobile Number must be 10 digits`);
@@ -260,17 +270,62 @@ const Employees = () => {
     }
 
     return errors;
-  };
+    };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Convert Excel serial or various string formats to 'YYYY-MM-DD'
+    const excelSerialToDate = (serial: number): string => {
+      if (!isFinite(serial)) return '';
+      const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+      const date = new Date(excelEpoch.getTime() + Math.round(serial) * 24 * 60 * 60 * 1000);
+      return date.toISOString().slice(0, 10);
+    };
+
+    const normalizeDateCell = (input: any): string | null => {
+      if (input === null || input === undefined) return null;
+      // Date instance
+      if (input instanceof Date && !isNaN(input.getTime())) {
+        return input.toISOString().slice(0, 10);
+      }
+      // Numbers (Excel serial)
+      if (typeof input === 'number' && isFinite(input)) {
+        return excelSerialToDate(input);
+      }
+      // Strings
+      const str = String(input).trim();
+      if (!str) return null;
+      // Try YYYY-MM-DD directly
+      if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+      // Replace letter O with zero for numeric-like serials (e.g., '33OO5')
+      if (/^[0-9O]+$/.test(str)) {
+        const fixed = str.replace(/O/g, '0');
+        if (/^\d{3,6}$/.test(fixed)) {
+          return excelSerialToDate(Number(fixed));
+        }
+      }
+      // Handle common separators
+      const m = str.match(/^(\d{1,4})[\/-](\d{1,2})[\/-](\d{1,4})$/);
+      if (m) {
+        let y: number, mo: number, d: number;
+        const a = m[1].length === 4 ? [Number(m[1]), Number(m[2]), Number(m[3])] : [Number(m[3]), Number(m[2]), Number(m[1])];
+        [y, mo, d] = a;
+        if (y >= 1900 && mo >= 1 && mo <= 12 && d >= 1 && d <= 31) {
+          const mm = String(mo).padStart(2, '0');
+          const dd = String(d).padStart(2, '0');
+          return `${y}-${mm}-${dd}`;
+        }
+      }
+      return null;
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
       const data = await file.arrayBuffer();
-      const workbook = XLSX.read(data);
+      const workbook = XLSX.read(data, { cellDates: true });
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "", raw: false });
 
       if (jsonData.length === 0) {
         toast({
@@ -314,7 +369,7 @@ const Employees = () => {
         employee_id: emp["Employee ID"]?.toString() || undefined,
         employee_name: String(emp["Employee Name*"] || ""),
         name_as_per_aadhar: String(emp["Name as per Aadhar*"] || ""),
-        date_of_birth: String(emp["Date Of Birth* (YYYY-MM-DD)"] || ""),
+        date_of_birth: normalizeDateCell(emp["Date Of Birth* (YYYY-MM-DD)"]) || "",
         gender: String(emp["Gender* (Male/Female/Other)"] || ""),
         marital_status: String(emp["Marital Status* (Single/Married/Divorced/Widowed)"] || ""),
         mobile_number: String(emp["Mobile Number*"] || ""),
@@ -331,7 +386,7 @@ const Employees = () => {
         aadhar_number: String(emp["Aadhar Number*"] || ""),
         international_employee: String(emp["International Employee (YES/NO)*"] || "").toUpperCase() === "YES",
         physically_handicapped: String(emp["Physically Handicapped (YES/NO)*"] || "").toUpperCase() === "YES",
-        date_of_joining: String(emp["DOJ* (YYYY-MM-DD)"] || ""),
+        date_of_joining: normalizeDateCell(emp["DOJ* (YYYY-MM-DD)"]) || "",
         emergency_mobile_number: String(emp["Emergency Mobile Number*"] || ""),
         permanent_address: String(emp["Permanent Address*"] || ""),
         department: emp["Department"] ? String(emp["Department"]) : undefined,
