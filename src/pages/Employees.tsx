@@ -276,28 +276,29 @@ const Employees = () => {
         return;
       }
 
-      // Validate all rows
-      const allErrors: string[] = [];
-      jsonData.forEach((emp: any, index: number) => {
+      // Validate all rows and collect errors
+      const dataWithErrors = jsonData.map((emp: any, index: number) => {
         const errors = validateEmployee(emp, index);
-        allErrors.push(...errors);
+        return {
+          ...emp,
+          "Errors": errors.length > 0 ? errors.join("; ") : ""
+        };
       });
 
-      if (allErrors.length > 0) {
-        // Download error file
-        const errorData = allErrors.map((error, index) => ({
-          "Row": index + 1,
-          "Error": error,
-        }));
+      // Check if there are any errors
+      const hasErrors = dataWithErrors.some((row: any) => row["Errors"]);
 
-        const ws = XLSX.utils.json_to_sheet(errorData);
+      if (hasErrors) {
+        // Download the same file with errors column
+        const ws = XLSX.utils.json_to_sheet(dataWithErrors);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Errors");
+        XLSX.utils.book_append_sheet(wb, ws, "Employee Data with Errors");
         XLSX.writeFile(wb, "employee_upload_errors.xlsx");
 
+        const errorCount = dataWithErrors.filter((row: any) => row["Errors"]).length;
         toast({
           title: "Validation Failed",
-          description: `${allErrors.length} errors found. Error file downloaded.`,
+          description: `${errorCount} row(s) have errors. File downloaded with error details.`,
           variant: "destructive",
         });
         return;
