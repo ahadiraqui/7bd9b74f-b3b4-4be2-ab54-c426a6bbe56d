@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Plus, Pencil, Trash2, Search, Link2, Copy, Download, Upload } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Download, Upload } from "lucide-react";
 import * as XLSX from "xlsx";
 import EmployeeDialog from "@/components/employees/EmployeeDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -172,14 +172,6 @@ const Employees = () => {
     }
   };
 
-  const copyShareLink = (shareToken: string) => {
-    const link = `${window.location.origin}/employee-update/${shareToken}`;
-    navigator.clipboard.writeText(link);
-    toast({
-      title: "Success",
-      description: "Share link copied to clipboard",
-    });
-  };
 
   const downloadTemplate = () => {
     const template = [
@@ -529,17 +521,6 @@ const Employees = () => {
                             title="Edit"
                           >
                             <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() =>
-                              employee.share_token &&
-                              copyShareLink(employee.share_token)
-                            }
-                            title="Copy Share Link"
-                          >
-                            <Link2 className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
