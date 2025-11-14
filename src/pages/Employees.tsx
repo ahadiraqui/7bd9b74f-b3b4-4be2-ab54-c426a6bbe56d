@@ -250,8 +250,13 @@ const Employees = () => {
     if (!emp["Permanent Address*"]) errors.push(`Row ${row}: Permanent Address is required`);
 
     // Validate mobile number format (10 digits)
-    if (emp["Mobile Number*"] && !/^\d{10}$/.test(emp["Mobile Number*"].toString())) {
+    if (emp["Mobile Number*"] && !/^\d{10}$/.test(String(emp["Mobile Number*"]))) {
       errors.push(`Row ${row}: Mobile Number must be 10 digits`);
+    }
+    
+    // Validate emergency mobile number format (10 digits)
+    if (emp["Emergency Mobile Number*"] && !/^\d{10}$/.test(String(emp["Emergency Mobile Number*"]))) {
+      errors.push(`Row ${row}: Emergency Mobile Number must be 10 digits`);
     }
 
     return errors;
@@ -306,34 +311,34 @@ const Employees = () => {
 
       // Convert to employee format and insert
       const employees = jsonData.map((emp: any) => ({
-        employee_id: emp["Employee ID"] || undefined,
-        employee_name: emp["Employee Name*"],
-        name_as_per_aadhar: emp["Name as per Aadhar*"],
-        date_of_birth: emp["Date Of Birth* (YYYY-MM-DD)"],
-        gender: emp["Gender* (Male/Female/Other)"],
-        marital_status: emp["Marital Status* (Single/Married/Divorced/Widowed)"],
-        mobile_number: emp["Mobile Number*"].toString(),
-        father_name: emp["Father Name*"],
-        husband_name: emp["Husband Name (For Married Female)"] || undefined,
-        pf_opted: emp["PF Opted (YES/NO)*"].toUpperCase() === "YES",
-        pf_basic_amount: emp["PF Basic Amount"] || undefined,
-        previous_pf_account_no: emp["Previous PF A/C No."] || undefined,
-        uan_number: emp["UAN Number"] || undefined,
-        bank_account_no: emp["Bank Account No.*"],
-        ifsc_code: emp["IFSC Code*"],
-        name_as_per_bank: emp["Name as per Bank*"],
-        pan_number: emp["PAN Number*"],
-        aadhar_number: emp["Aadhar Number*"],
-        international_employee: emp["International Employee (YES/NO)*"].toUpperCase() === "YES",
-        physically_handicapped: emp["Physically Handicapped (YES/NO)*"].toUpperCase() === "YES",
-        date_of_joining: emp["DOJ* (YYYY-MM-DD)"],
-        emergency_mobile_number: emp["Emergency Mobile Number*"].toString(),
-        permanent_address: emp["Permanent Address*"],
-        department: emp["Department"] || undefined,
-        designation: emp["Designation"] || undefined,
-        location: emp["Location"] || undefined,
-        email: emp["Email"] || undefined,
-        salary: emp["Salary"] ? parseFloat(emp["Salary"]) : undefined,
+        employee_id: emp["Employee ID"]?.toString() || undefined,
+        employee_name: String(emp["Employee Name*"] || ""),
+        name_as_per_aadhar: String(emp["Name as per Aadhar*"] || ""),
+        date_of_birth: String(emp["Date Of Birth* (YYYY-MM-DD)"] || ""),
+        gender: String(emp["Gender* (Male/Female/Other)"] || ""),
+        marital_status: String(emp["Marital Status* (Single/Married/Divorced/Widowed)"] || ""),
+        mobile_number: String(emp["Mobile Number*"] || ""),
+        father_name: String(emp["Father Name*"] || ""),
+        husband_name: emp["Husband Name (For Married Female)"] ? String(emp["Husband Name (For Married Female)"]) : undefined,
+        pf_opted: String(emp["PF Opted (YES/NO)*"] || "").toUpperCase() === "YES",
+        pf_basic_amount: emp["PF Basic Amount"] ? String(emp["PF Basic Amount"]) : undefined,
+        previous_pf_account_no: emp["Previous PF A/C No."] ? String(emp["Previous PF A/C No."]) : undefined,
+        uan_number: emp["UAN Number"] ? String(emp["UAN Number"]) : undefined,
+        bank_account_no: String(emp["Bank Account No.*"] || ""),
+        ifsc_code: String(emp["IFSC Code*"] || ""),
+        name_as_per_bank: String(emp["Name as per Bank*"] || ""),
+        pan_number: String(emp["PAN Number*"] || ""),
+        aadhar_number: String(emp["Aadhar Number*"] || ""),
+        international_employee: String(emp["International Employee (YES/NO)*"] || "").toUpperCase() === "YES",
+        physically_handicapped: String(emp["Physically Handicapped (YES/NO)*"] || "").toUpperCase() === "YES",
+        date_of_joining: String(emp["DOJ* (YYYY-MM-DD)"] || ""),
+        emergency_mobile_number: String(emp["Emergency Mobile Number*"] || ""),
+        permanent_address: String(emp["Permanent Address*"] || ""),
+        department: emp["Department"] ? String(emp["Department"]) : undefined,
+        designation: emp["Designation"] ? String(emp["Designation"]) : undefined,
+        location: emp["Location"] ? String(emp["Location"]) : undefined,
+        email: emp["Email"] ? String(emp["Email"]) : undefined,
+        salary: emp["Salary"] ? parseFloat(String(emp["Salary"])) : undefined,
       }));
 
       const { error } = await supabase.from("employees").insert(employees);
