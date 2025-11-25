@@ -19,20 +19,25 @@ export type Database = {
           aadhar_number: string
           bank_account_no: string
           created_at: string
+          current_location: string | null
           date_of_birth: string
           date_of_joining: string
           department: string | null
           designation: string | null
           email: string | null
+          emergency_contact_person_name: string | null
           emergency_mobile_number: string
           employee_id: string | null
-          employee_name: string
+          employee_name: string | null
           father_name: string
+          first_name: string | null
           gender: string
+          highest_qualification: string | null
           husband_name: string | null
           id: string
           ifsc_code: string
           international_employee: boolean
+          last_name: string | null
           location: string | null
           marital_status: string
           mobile_number: string
@@ -46,28 +51,35 @@ export type Database = {
           previous_pf_account_no: string | null
           salary: number | null
           share_token: string | null
+          status: string | null
           uan_number: string | null
           updated_at: string
           user_id: string | null
+          work_mode: string | null
         }
         Insert: {
           aadhar_number: string
           bank_account_no: string
           created_at?: string
+          current_location?: string | null
           date_of_birth: string
           date_of_joining: string
           department?: string | null
           designation?: string | null
           email?: string | null
+          emergency_contact_person_name?: string | null
           emergency_mobile_number: string
           employee_id?: string | null
-          employee_name: string
+          employee_name?: string | null
           father_name: string
+          first_name?: string | null
           gender: string
+          highest_qualification?: string | null
           husband_name?: string | null
           id?: string
           ifsc_code: string
           international_employee?: boolean
+          last_name?: string | null
           location?: string | null
           marital_status: string
           mobile_number: string
@@ -81,28 +93,35 @@ export type Database = {
           previous_pf_account_no?: string | null
           salary?: number | null
           share_token?: string | null
+          status?: string | null
           uan_number?: string | null
           updated_at?: string
           user_id?: string | null
+          work_mode?: string | null
         }
         Update: {
           aadhar_number?: string
           bank_account_no?: string
           created_at?: string
+          current_location?: string | null
           date_of_birth?: string
           date_of_joining?: string
           department?: string | null
           designation?: string | null
           email?: string | null
+          emergency_contact_person_name?: string | null
           emergency_mobile_number?: string
           employee_id?: string | null
-          employee_name?: string
+          employee_name?: string | null
           father_name?: string
+          first_name?: string | null
           gender?: string
+          highest_qualification?: string | null
           husband_name?: string | null
           id?: string
           ifsc_code?: string
           international_employee?: boolean
+          last_name?: string | null
           location?: string | null
           marital_status?: string
           mobile_number?: string
@@ -116,9 +135,11 @@ export type Database = {
           previous_pf_account_no?: string | null
           salary?: number | null
           share_token?: string | null
+          status?: string | null
           uan_number?: string | null
           updated_at?: string
           user_id?: string | null
+          work_mode?: string | null
         }
         Relationships: []
       }
