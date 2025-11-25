@@ -19,32 +19,39 @@ import { useToast } from "@/hooks/use-toast";
 export interface Employee {
   id: string;
   employee_id?: string;
-  employee_name: string;
-  name_as_per_aadhar: string;
-  date_of_birth: string;
-  gender: string;
-  marital_status: string;
+  first_name?: string;
+  last_name?: string;
+  employee_name?: string; // Keep for backward compatibility
+  date_of_joining: string;
   mobile_number: string;
+  email?: string;
+  designation?: string;
+  gender: string;
+  status?: string;
+  work_mode?: string;
+  date_of_birth: string;
+  highest_qualification?: string;
   father_name: string;
-  husband_name?: string;
+  emergency_mobile_number: string;
+  emergency_contact_person_name?: string;
+  current_location?: string;
+  permanent_address: string;
   pf_opted: boolean;
-  pf_basic_amount?: string;
   previous_pf_account_no?: string;
   uan_number?: string;
+  name_as_per_aadhar: string;
   bank_account_no: string;
   ifsc_code: string;
   name_as_per_bank: string;
   pan_number: string;
   aadhar_number: string;
+  marital_status: string;
+  husband_name?: string;
+  pf_basic_amount?: string;
   international_employee: boolean;
   physically_handicapped: boolean;
-  date_of_joining: string;
-  emergency_mobile_number: string;
-  permanent_address: string;
   department?: string;
-  designation?: string;
   location?: string;
-  email?: string;
   salary?: number;
   share_token?: string;
 }
@@ -96,10 +103,14 @@ const Employees = () => {
 
     const query = searchQuery.toLowerCase();
     const filtered = employees.filter(
-      (emp) =>
-        emp.employee_id?.toLowerCase().includes(query) ||
-        emp.employee_name.toLowerCase().includes(query) ||
-        emp.mobile_number.includes(query)
+      (emp) => {
+        const fullName = `${emp.first_name || ""} ${emp.last_name || ""}`.toLowerCase();
+        return (
+          emp.employee_id?.toLowerCase().includes(query) ||
+          fullName.includes(query) ||
+          emp.mobile_number.includes(query)
+        );
+      }
     );
     setFilteredEmployees(filtered);
   };
@@ -230,33 +241,31 @@ const Employees = () => {
     const template = [
       {
         "Employee ID": "",
-        "Employee Name*": "",
-        "Name as per Aadhar*": "",
-        "Date Of Birth* (YYYY-MM-DD)": "",
+        "First Name*": "",
+        "Last Name*": "",
+        "Date of Joining* (YYYY-MM-DD)": "",
+        "Mobile No*": "",
+        "Email ID": "",
+        "Designation": "",
         "Gender* (Male/Female/Other)": "",
-        "Marital Status* (Single/Married/Divorced/Widowed)": "",
-        "Mobile Number*": "",
-        "Father Name*": "",
-        "Husband Name (For Married Female)": "",
+        "Status* (Active/Inactive/Active Contractual)": "Active",
+        "Work Mode (WFO/WFH/Hybrid)": "",
+        "Birth Date* (YYYY-MM-DD)": "",
+        "Highest Qualification": "",
+        "Father's Name*": "",
+        "Emergency Contact No.*": "",
+        "Emergency Contact Person Name*": "",
+        "Current Location*": "",
+        "Permanent Address*": "",
         "PF Opted (YES/NO)*": "",
-        "PF Basic Amount": "",
         "Previous PF A/C No.": "",
-        "UAN Number": "",
+        "UAN no. if any": "",
+        "Name as per Aadhar*": "",
         "Bank Account No.*": "",
         "IFSC Code*": "",
-        "Name as per Bank*": "",
-        "PAN Number*": "",
-        "Aadhar Number*": "",
-        "International Employee (YES/NO)*": "",
-        "Physically Handicapped (YES/NO)*": "",
-        "DOJ* (YYYY-MM-DD)": "",
-        "Emergency Mobile Number*": "",
-        "Permanent Address*": "",
-        "Department": "",
-        "Designation": "",
-        "Location": "",
-        "Email": "",
-        "Salary": "",
+        "Name as per Bank Records*": "",
+        "PAN No.*": "",
+        "Aadhar Card No.*": "",
       },
     ];
 
@@ -275,43 +284,44 @@ const Employees = () => {
     const errors: string[] = [];
     const row = rowIndex + 2; // +2 because Excel starts at 1 and has header row
 
-    if (!emp["Employee Name*"]) errors.push(`Row ${row}: Employee Name is required`);
-    if (!emp["Name as per Aadhar*"]) errors.push(`Row ${row}: Name as per Aadhar is required`);
-    if (!emp["Date Of Birth* (YYYY-MM-DD)"]) errors.push(`Row ${row}: Date of Birth is required`);
+    if (!emp["First Name*"]) errors.push(`Row ${row}: First Name is required`);
+    if (!emp["Last Name*"]) errors.push(`Row ${row}: Last Name is required`);
+    if (!emp["Date of Joining* (YYYY-MM-DD)"]) errors.push(`Row ${row}: Date of Joining is required`);
+    if (!emp["Mobile No*"]) errors.push(`Row ${row}: Mobile No is required`);
     if (!emp["Gender* (Male/Female/Other)"]) errors.push(`Row ${row}: Gender is required`);
-    if (!emp["Marital Status* (Single/Married/Divorced/Widowed)"]) errors.push(`Row ${row}: Marital Status is required`);
-    if (!emp["Mobile Number*"]) errors.push(`Row ${row}: Mobile Number is required`);
-    if (!emp["Father Name*"]) errors.push(`Row ${row}: Father Name is required`);
+    if (!emp["Status* (Active/Inactive/Active Contractual)"]) errors.push(`Row ${row}: Status is required`);
+    if (!emp["Birth Date* (YYYY-MM-DD)"]) errors.push(`Row ${row}: Birth Date is required`);
+    if (!emp["Father's Name*"]) errors.push(`Row ${row}: Father's Name is required`);
+    if (!emp["Emergency Contact No.*"]) errors.push(`Row ${row}: Emergency Contact No. is required`);
+    if (!emp["Emergency Contact Person Name*"]) errors.push(`Row ${row}: Emergency Contact Person Name is required`);
+    if (!emp["Current Location*"]) errors.push(`Row ${row}: Current Location is required`);
+    if (!emp["Permanent Address*"]) errors.push(`Row ${row}: Permanent Address is required`);
     if (!emp["PF Opted (YES/NO)*"]) errors.push(`Row ${row}: PF Opted is required`);
+    if (!emp["Name as per Aadhar*"]) errors.push(`Row ${row}: Name as per Aadhar is required`);
     if (!emp["Bank Account No.*"]) errors.push(`Row ${row}: Bank Account No. is required`);
     if (!emp["IFSC Code*"]) errors.push(`Row ${row}: IFSC Code is required`);
-    if (!emp["Name as per Bank*"]) errors.push(`Row ${row}: Name as per Bank is required`);
-    if (!emp["PAN Number*"]) errors.push(`Row ${row}: PAN Number is required`);
-    if (!emp["Aadhar Number*"]) errors.push(`Row ${row}: Aadhar Number is required`);
-    if (!emp["International Employee (YES/NO)*"]) errors.push(`Row ${row}: International Employee is required`);
-    if (!emp["Physically Handicapped (YES/NO)*"]) errors.push(`Row ${row}: Physically Handicapped is required`);
-    if (!emp["DOJ* (YYYY-MM-DD)"]) errors.push(`Row ${row}: Date of Joining is required`);
-    if (!emp["Emergency Mobile Number*"]) errors.push(`Row ${row}: Emergency Mobile Number is required`);
-    if (!emp["Permanent Address*"]) errors.push(`Row ${row}: Permanent Address is required`);
+    if (!emp["Name as per Bank Records*"]) errors.push(`Row ${row}: Name as per Bank Records is required`);
+    if (!emp["PAN No.*"]) errors.push(`Row ${row}: PAN No. is required`);
+    if (!emp["Aadhar Card No.*"]) errors.push(`Row ${row}: Aadhar Card No. is required`);
 
-    // Validate date formats (DOB and DOJ)
-    const dobNorm = normalizeDateCell(emp["Date Of Birth* (YYYY-MM-DD)"]);
+    // Validate date formats
+    const dobNorm = normalizeDateCell(emp["Birth Date* (YYYY-MM-DD)"]);
     if (!dobNorm) {
-      errors.push(`Row ${row}: Invalid Date Of Birth. Use YYYY-MM-DD or a valid Excel date (e.g., 33005)`);
+      errors.push(`Row ${row}: Invalid Birth Date. Use YYYY-MM-DD or a valid Excel date (e.g., 33005)`);
     }
-    const dojNorm = normalizeDateCell(emp["DOJ* (YYYY-MM-DD)"]);
+    const dojNorm = normalizeDateCell(emp["Date of Joining* (YYYY-MM-DD)"]);
     if (!dojNorm) {
       errors.push(`Row ${row}: Invalid Date of Joining. Use YYYY-MM-DD or a valid Excel date (e.g., 33005)`);
     }
 
     // Validate mobile number format (10 digits)
-    if (emp["Mobile Number*"] && !/^\d{10}$/.test(String(emp["Mobile Number*"]))) {
-      errors.push(`Row ${row}: Mobile Number must be 10 digits`);
+    if (emp["Mobile No*"] && !/^\d{10}$/.test(String(emp["Mobile No*"]))) {
+      errors.push(`Row ${row}: Mobile No must be 10 digits`);
     }
     
     // Validate emergency mobile number format (10 digits)
-    if (emp["Emergency Mobile Number*"] && !/^\d{10}$/.test(String(emp["Emergency Mobile Number*"]))) {
-      errors.push(`Row ${row}: Emergency Mobile Number must be 10 digits`);
+    if (emp["Emergency Contact No.*"] && !/^\d{10}$/.test(String(emp["Emergency Contact No.*"]))) {
+      errors.push(`Row ${row}: Emergency Contact No. must be 10 digits`);
     }
 
     return errors;
@@ -410,36 +420,46 @@ const Employees = () => {
       }
 
       // Convert to employee format and insert
-      const employees = jsonData.map((emp: any) => ({
-        employee_id: emp["Employee ID"]?.toString() || undefined,
-        employee_name: String(emp["Employee Name*"] || ""),
-        name_as_per_aadhar: String(emp["Name as per Aadhar*"] || ""),
-        date_of_birth: normalizeDateCell(emp["Date Of Birth* (YYYY-MM-DD)"]) || "",
-        gender: String(emp["Gender* (Male/Female/Other)"] || ""),
-        marital_status: String(emp["Marital Status* (Single/Married/Divorced/Widowed)"] || ""),
-        mobile_number: String(emp["Mobile Number*"] || ""),
-        father_name: String(emp["Father Name*"] || ""),
-        husband_name: emp["Husband Name (For Married Female)"] ? String(emp["Husband Name (For Married Female)"]) : undefined,
-        pf_opted: String(emp["PF Opted (YES/NO)*"] || "").toUpperCase() === "YES",
-        pf_basic_amount: emp["PF Basic Amount"] ? String(emp["PF Basic Amount"]) : undefined,
-        previous_pf_account_no: emp["Previous PF A/C No."] ? String(emp["Previous PF A/C No."]) : undefined,
-        uan_number: emp["UAN Number"] ? String(emp["UAN Number"]) : undefined,
-        bank_account_no: String(emp["Bank Account No.*"] || ""),
-        ifsc_code: String(emp["IFSC Code*"] || ""),
-        name_as_per_bank: String(emp["Name as per Bank*"] || ""),
-        pan_number: String(emp["PAN Number*"] || ""),
-        aadhar_number: String(emp["Aadhar Number*"] || ""),
-        international_employee: String(emp["International Employee (YES/NO)*"] || "").toUpperCase() === "YES",
-        physically_handicapped: String(emp["Physically Handicapped (YES/NO)*"] || "").toUpperCase() === "YES",
-        date_of_joining: normalizeDateCell(emp["DOJ* (YYYY-MM-DD)"]) || "",
-        emergency_mobile_number: String(emp["Emergency Mobile Number*"] || ""),
-        permanent_address: String(emp["Permanent Address*"] || ""),
-        department: emp["Department"] ? String(emp["Department"]) : undefined,
-        designation: emp["Designation"] ? String(emp["Designation"]) : undefined,
-        location: emp["Location"] ? String(emp["Location"]) : undefined,
-        email: emp["Email"] ? String(emp["Email"]) : undefined,
-        salary: emp["Salary"] ? parseFloat(String(emp["Salary"])) : undefined,
-      }));
+      const employees = jsonData.map((emp: any) => {
+        const firstName = String(emp["First Name*"] || "");
+        const lastName = String(emp["Last Name*"] || "");
+        
+        return {
+          employee_id: emp["Employee ID"]?.toString() || undefined,
+          first_name: firstName,
+          last_name: lastName,
+          employee_name: `${firstName} ${lastName}`.trim(), // Combine for backward compatibility
+          date_of_joining: normalizeDateCell(emp["Date of Joining* (YYYY-MM-DD)"]) || "",
+          mobile_number: String(emp["Mobile No*"] || ""),
+          email: emp["Email ID"] ? String(emp["Email ID"]) : undefined,
+          designation: emp["Designation"] ? String(emp["Designation"]) : undefined,
+          gender: String(emp["Gender* (Male/Female/Other)"] || ""),
+          status: String(emp["Status* (Active/Inactive/Active Contractual)"] || "Active"),
+          work_mode: emp["Work Mode (WFO/WFH/Hybrid)"] ? String(emp["Work Mode (WFO/WFH/Hybrid)"]) : undefined,
+          date_of_birth: normalizeDateCell(emp["Birth Date* (YYYY-MM-DD)"]) || "",
+          highest_qualification: emp["Highest Qualification"] ? String(emp["Highest Qualification"]) : undefined,
+          father_name: String(emp["Father's Name*"] || ""),
+          emergency_mobile_number: String(emp["Emergency Contact No.*"] || ""),
+          emergency_contact_person_name: String(emp["Emergency Contact Person Name*"] || ""),
+          current_location: String(emp["Current Location*"] || ""),
+          permanent_address: String(emp["Permanent Address*"] || ""),
+          pf_opted: String(emp["PF Opted (YES/NO)*"] || "").toUpperCase() === "YES",
+          previous_pf_account_no: emp["Previous PF A/C No."] ? String(emp["Previous PF A/C No."]) : undefined,
+          uan_number: emp["UAN no. if any"] ? String(emp["UAN no. if any"]) : undefined,
+          name_as_per_aadhar: String(emp["Name as per Aadhar*"] || ""),
+          bank_account_no: String(emp["Bank Account No.*"] || ""),
+          ifsc_code: String(emp["IFSC Code*"] || ""),
+          name_as_per_bank: String(emp["Name as per Bank Records*"] || ""),
+          pan_number: String(emp["PAN No.*"] || ""),
+          aadhar_number: String(emp["Aadhar Card No.*"] || ""),
+          marital_status: "Single", // Default value
+          international_employee: false,
+          physically_handicapped: false,
+          department: undefined,
+          location: undefined,
+          salary: undefined,
+        };
+      });
 
       const { error } = await supabase.from("employees").insert(employees);
 
@@ -560,11 +580,11 @@ const Employees = () => {
                   <TableRow>
                     {deleteMode && <TableHead className="w-12"></TableHead>}
                     <TableHead>Employee ID</TableHead>
-                    <TableHead>Name</TableHead>
+                    <TableHead>First Name</TableHead>
+                    <TableHead>Last Name</TableHead>
                     <TableHead>Mobile</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Designation</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>DOJ</TableHead>
                     {!deleteMode && <TableHead className="text-right">Actions</TableHead>}
                   </TableRow>
@@ -585,11 +605,11 @@ const Employees = () => {
                       <TableCell className="font-medium">
                         {employee.employee_id || "N/A"}
                       </TableCell>
-                      <TableCell>{employee.employee_name}</TableCell>
+                      <TableCell>{employee.first_name || "N/A"}</TableCell>
+                      <TableCell>{employee.last_name || "N/A"}</TableCell>
                       <TableCell>{employee.mobile_number}</TableCell>
                       <TableCell>{employee.email || "N/A"}</TableCell>
-                      <TableCell>{employee.department || "N/A"}</TableCell>
-                      <TableCell>{employee.designation || "N/A"}</TableCell>
+                      <TableCell>{employee.status || "Active"}</TableCell>
                       <TableCell>
                         {new Date(employee.date_of_joining).toLocaleDateString()}
                       </TableCell>
